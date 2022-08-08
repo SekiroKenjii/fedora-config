@@ -1,0 +1,80 @@
+# Configuration - RPM Fusion
+
+## Installing Free and Nonfree Repositories
+
+sudo dnf install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+
+## AppStream metadata
+
+sudo dnf groupupdate core
+
+## Multimedia post-install
+
+sudo dnf groupupdate multimedia --setop="install_weak_deps=False" --exclude=PackageKit-gstreamer-plugin
+sudo dnf groupupdate sound-and-video
+
+## Installing the NVIDIA drivers
+
+sudo dnf update -y
+--> reboot if you are not on the latest kernel <--
+sudo dnf install kernel-devel
+sudo dnf install akmod-nvidia xorg-x11-drv-nvidia-cuda xorg-x11-drv-nvidia-power
+sudo systemctl enable nvidia-hibernate.service nvidia-suspend.service nvidia-resume.service
+
+## Installing lukenukem/asus-linux
+
+sudo dnf copr enable lukenukem/asus-linux
+sudo dnf update -y
+--> reboot if you are not on the latest kernel <--
+--> Update System Boot Configuration <--
+sudo nano /etc/default/grub
+
+---
+
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
+GRUB_DEFAULT=saved
+GRUB_DISABLE_SUBMENU=true
+GRUB_TERMINAL_OUTPUT="console"
+GRUB_CMDLINE_LINUX="rd.driver.blacklist=nouveau modprobe.blacklist=nouveau nvidia-drm.modeset=0 rhgb quiet"
+GRUB_DISABLE_RECOVERY="true"
+GRUB_ENABLE_BLSCFG=true
+
+---
+
+sudo grub2-mkconfig -o /etc/grub2.cfg
+--> Reboot <--
+
+## Installing asusctl
+
+sudo dnf install asusctl supergfxctl
+sudo dnf update --refresh
+sudo systemctl enable supergfxd.service
+--> Reboot <--
+A desktop widget to operate some aspects of asusctl and supergfxctl: (https://extensions.gnome.org/extension/4320/asusctl-gex/)
+
+## Installing softwares
+
+### Code
+
+sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+sudo sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
+sudo dnf check-update
+sudo dnf install code
+
+### Teams
+
+https://go.microsoft.com/fwlink/p/?LinkID=2112907&clcid=0x42a&culture=vi-vn&country=VN
+
+### Flathub repository
+
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+### Fish shell
+
+sudo dnf install fish
+chsh -s $(which fish)
+
+### PHPStorm (xampp 7.3, php, composer, ...) -> DataGrip
+
+### Gnome-Tweaks -> Extensions -> Extension Manager (Rounded Window Corners, Tray icons, ...)
